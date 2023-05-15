@@ -20,4 +20,4 @@ RUN poetry install --without lint
 COPY . /app/src/
 RUN poetry install --without lint
 
-CMD ["gunicorn", "--worker-class", "aiohttp.GunicornWebWorker", "aiohttp_app.main:app", "-w", "1", "--bind", "0.0.0.0:8080"]
+CMD ["gunicorn", "--worker-class", "aiohttp.GunicornWebWorker", "aiohttp_app.__main__:app", "-w", "1", "--bind", "0.0.0.0:8080"]

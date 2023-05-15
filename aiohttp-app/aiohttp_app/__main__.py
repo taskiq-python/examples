@@ -16,3 +16,8 @@ app.on_startup.extend(
 app.cleanup_ctx.extend([lifetime.setup_db, lifetime.setup_taskiq])
 
 app.add_routes(router)
+
+# In case if you want to run your app
+# without gunicorn.
+if __name__ == "__main__":
+    web.run_app(app)

@@ -14,4 +14,4 @@ broker = NatsBroker(
     )
 )
 
-taskiq_aiohttp.init(broker, "aiohttp_app.main:app")
+taskiq_aiohttp.init(broker, "aiohttp_app.__main__:app")
