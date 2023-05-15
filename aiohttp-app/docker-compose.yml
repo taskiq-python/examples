@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  app:
+    &app
+    image: aiohttp_app:latest
+    build: .
+    ports:
+      - 8080:8080
+    environment:
+      AIOHTTP_APP_POSTGRES_URL: postgresql://aiohttp_app:aiohttp_app@db:5432/aiohttp_app
+      AIOHTTP_APP_NATS_URLS: nats://nats:4222/
+      AIOHTTP_APP_REDIS_URL: redis://redis/
+    depends_on:
+      db:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  taskiq-worker:
+    <<: *app
+    ports: []
+    command: [ taskiq, worker, aiohttp_app.tkq:broker ]
+
+  db:
+    image: "postgres:15.2-bullseye"
+    hostname: db
+    environment:
+      POSTGRES_DB: "aiohttp_app"
+      POSTGRES_USER: "aiohttp_app"
+      POSTGRES_PASSWORD: "aiohttp_app"
+    restart: always
+    healthcheck:
+      test: pg_isready -U aiohttp_app
+      interval: 2s
+      timeout: 3s
+      retries: 40
+
+  nats:
+    image: nats:2.9.15-alpine
+    hostname: nats
+    command:
+      - "-m"
+      - "8222"
+    healthcheck:
+      test:
+        - "CMD"
+        - "sh"
+        - "-c"
+        - "wget http://localhost:8222/healthz -q -O - | xargs | grep ok || exit 1"
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: bitnami/redis:6.2.5
+    hostname: redis
+    restart: always
+    environment:
+      ALLOW_EMPTY_PASSWORD: "yes"
+    healthcheck:
+      test: redis-cli ping
+      interval: 1s
+      timeout: 3s
+      retries: 50

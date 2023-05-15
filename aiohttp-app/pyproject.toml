@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "aiohttp-app"
+version = "0.1.0"
+description = ""
+authors = ["Pavel Kirilin <win10@list.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+aiohttp = "^3"
+taskiq = "^0"
+taskiq-nats = "^0"
+taskiq-redis = "^0"
+taskiq-aiohttp = "^0"
+aiohttp-deps = "^0"
+gunicorn = "^20"
+pydantic = { version = "^1", extras = ["dotenv"] }
+psycopg = {version = "^3.1.9", extras = ["pool"]}
+
+
+[tool.poetry.group.lint.dependencies]
+black = "^23"
+isort = "^5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
