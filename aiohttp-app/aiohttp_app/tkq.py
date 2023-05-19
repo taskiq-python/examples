@@ -1,4 +1,5 @@
 import taskiq_aiohttp
+from taskiq import InMemoryBroker
 from taskiq_nats import NatsBroker
 from taskiq_redis import RedisAsyncResultBackend
 
@@ -14,4 +15,7 @@ broker = NatsBroker(
     )
 )
 
-taskiq_aiohttp.init(broker, "aiohttp_app.__main__:app")
+if settings.env.lower() == "pytest":
+    broker = InMemoryBroker()
+
+taskiq_aiohttp.init(broker, "aiohttp_app.__main__:get_app")

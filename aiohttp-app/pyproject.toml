@@ -22,6 +22,21 @@ psycopg = {version = "^3.1.9", extras = ["pool"]}
 black = "^23"
 isort = "^5"
 
+[tool.poetry.group.test.dependencies]
+pytest = "^7.3.1"
+anyio = "^3.6.2"
+pytest-env = "^0.8.1"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning",
+    "ignore:.*unclosed.*:ResourceWarning",
+]
+env = [
+    "AIOHTTP_APP_ENV=pytest"
+]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

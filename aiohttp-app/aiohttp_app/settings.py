@@ -2,6 +2,10 @@ from pydantic import BaseSettings, Field
 
 
 class Settings(BaseSettings):
+    env: str = Field(
+        default="prod",
+        description="Current environment",
+    )
     postgres_url: str = Field(
         default="postgresql://aiohttp_app:aiohttp_app@localhost:5432/aiohttp_app",
         description="URL of postgresql",
