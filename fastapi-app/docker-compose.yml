@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  app:
+    &app
+    image: fastapi_app:latest
+    build: .
+    ports:
+      - 8080:8080
+    environment:
+      FASTAPI_APP_POSTGRES_URL: postgresql://fastapi_app:fastapi_app@db:5432/fastapi_app
+      FASTAPI_APP_NATS_URLS: nats://nats:4222/
+      FASTAPI_APP_REDIS_URL: redis://redis/
+    depends_on:
+      db:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      taskiq-worker:
+        condition: service_started
+
+  taskiq-worker:
+    <<: *app
+    ports: []
+    command: [ taskiq, worker, fastapi_app.tkq:broker ]
+    depends_on:
+      db:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  db:
+    image: "postgres:15.2-bullseye"
+    hostname: db
+    environment:
+      POSTGRES_DB: "fastapi_app"
+      POSTGRES_USER: "fastapi_app"
+      POSTGRES_PASSWORD: "fastapi_app"
+    restart: always
+    healthcheck:
+      test: pg_isready -U fastapi_app
+      interval: 2s
+      timeout: 3s
+      retries: 40
+
+  nats:
+    image: nats:2.9.15-alpine
+    hostname: nats
+    command:
+      - "-m"
+      - "8222"
+    healthcheck:
+      test:
+        - "CMD"
+        - "sh"
+        - "-c"
+        - "wget http://localhost:8222/healthz -q -O - | xargs | grep ok || exit 1"
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: bitnami/redis:6.2.5
+    hostname: redis
+    restart: always
+    environment:
+      ALLOW_EMPTY_PASSWORD: "yes"
+    healthcheck:
+      test: redis-cli ping
+      interval: 1s
+      timeout: 3s
+      retries: 50
