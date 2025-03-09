@@ -1,11 +1,11 @@
 import taskiq_fastapi
 from taskiq import InMemoryBroker
-from taskiq_nats import NatsBroker
+from taskiq_nats import PullBasedJetStreamBroker
 from taskiq_redis import RedisAsyncResultBackend
 
 from fastapi_app.settings import settings
 
-broker = NatsBroker(
+broker = PullBasedJetStreamBroker(
     settings.nats_urls.split(","),
     queue="fastapi_app_queue",
 ).with_result_backend(

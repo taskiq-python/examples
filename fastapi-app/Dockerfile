@@ -1,6 +1,6 @@
 FROM python:3.11-slim-buster
 
-RUN pip install poetry==1.2.2
+RUN pip install poetry==2.0.1
 
 # Configuring poetry
 RUN poetry config virtualenvs.create false
@@ -14,10 +14,10 @@ COPY pyproject.toml poetry.lock /app/src/
 WORKDIR /app/src
 
 # Installing requirements
-RUN poetry install --without lint
+RUN poetry install --without lint --no-root
 
 # Copying actuall application
 COPY . /app/src/
 RUN poetry install --without lint
 
-CMD ["gunicorn", "--worker-class", "uvicorn.workers.UvicornWorker", "fastapi_app.__main__:get_app", "-w", "1", "--bind", "0.0.0.0:8080"]
+CMD ["uvicorn", "fastapi_app.__main__:get_app", "--factory", "--workers", "1", "--host", "0.0.0.0", "--port", "8080"]

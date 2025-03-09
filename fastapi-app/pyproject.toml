@@ -9,22 +9,22 @@ readme = "README.md"
 python = "^3.11"
 taskiq = "^0"
 taskiq-nats = "^0"
-taskiq-redis = "^0"
+taskiq-redis = "^1"
 taskiq-fastapi = "^0"
-fastapi = "^0.95.2"
-uvicorn = "^0.22.0"
-gunicorn = "^20.1.0"
-psycopg = { version = "^3.1.9", extras = ["pool"] }
+fastapi = "^0"
+uvicorn = "^0"
+psycopg = { version = "^3", extras = ["pool"] }
+pydantic-settings = "^2.8.1"
 
 [tool.poetry.group.lint.dependencies]
-black = "^23"
-isort = "^5"
+black = "^25"
+isort = "^6"
 
 [tool.poetry.group.test.dependencies]
-pytest = "^7.3.1"
-anyio = "^3.6.2"
-pytest-env = "^0.8.1"
-httpx = "^0.24.1"
+pytest = "^8"
+anyio = "^4"
+pytest-env = "^1"
+httpx = "^0"
 
 [tool.poetry.group.dev.dependencies]
 taskiq = { version = "^0", extras = ["reload"] }

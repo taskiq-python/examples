@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     &app
@@ -7,31 +5,34 @@ services:
     build: .
     ports:
       - 8080:8080
+    restart: always
     environment:
       FASTAPI_APP_POSTGRES_URL: postgresql://fastapi_app:fastapi_app@db:5432/fastapi_app
       FASTAPI_APP_NATS_URLS: nats://nats:4222/
-      FASTAPI_APP_REDIS_URL: redis://redis/
+      FASTAPI_APP_REDIS_URL: redis://valkey/
+    # For live reload on fs changes
+    develop:
+      watch:
+        - path: ./fastapi_app
+          target: /app/src/fastapi_app
+          action: sync+restart
     depends_on:
       db:
         condition: service_healthy
       nats:
         condition: service_healthy
-      redis:
+      valkey:
         condition: service_healthy
-      taskiq-worker:
-        condition: service_started
 
   taskiq-worker:
     <<: *app
     ports: []
-    command: [ taskiq, worker, fastapi_app.tkq:broker ]
-    depends_on:
-      db:
-        condition: service_healthy
-      nats:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+    command: [ taskiq, worker, -fsd, fastapi_app.tkq:broker, -w, "1", --max-fails, "1"]
+
+  taskiq-scheduler:
+    <<: *app
+    ports: []
+    command: [ taskiq, scheduler, -fsd, fastapi_app.tkq_sched:scheduler ]
 
   db:
     image: "postgres:15.2-bullseye"
@@ -48,9 +49,10 @@ services:
       retries: 40
 
   nats:
-    image: nats:2.9.15-alpine
+    image: nats:2.10-alpine
     hostname: nats
     command:
+      - "-js"
       - "-m"
       - "8222"
     healthcheck:
@@ -63,14 +65,14 @@ services:
       timeout: 3s
       retries: 5
 
-  redis:
-    image: bitnami/redis:6.2.5
-    hostname: redis
+  valkey:
+    image: bitnami/valkey:8.0.2
+    hostname: valkey
     restart: always
     environment:
       ALLOW_EMPTY_PASSWORD: "yes"
     healthcheck:
-      test: redis-cli ping
+      test: valkey-cli ping
       interval: 1s
       timeout: 3s
       retries: 50
